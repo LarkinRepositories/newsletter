@@ -19,7 +19,8 @@ public class NewsDto {
     @Length(max = 1000, message = "Title is too long. Should be less than or equal 1000 characters")
     private String title;
     private LocalDateTime created;
-    private String img;
+////    private String img;
+    private ImageDto image;
     @NotNull
     @NotBlank(message = "Text should not be empty")
     @Length(max = 2048, message = "Text is too long. Should be less than or equal 2048 characters ")
