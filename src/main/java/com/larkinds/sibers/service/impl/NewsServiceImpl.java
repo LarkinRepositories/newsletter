@@ -1,6 +1,7 @@
 package com.larkinds.sibers.service.impl;
 
 import com.larkinds.sibers.dto.NewsDto;
+import com.larkinds.sibers.mapper.ImageMapper;
 import com.larkinds.sibers.mapper.NewsMapper;
 import com.larkinds.sibers.repository.NewsRepository;
 import com.larkinds.sibers.service.NewsService;
@@ -9,7 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class NewsServiceImpl implements NewsService {
@@ -24,6 +27,7 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public NewsDto add(NewsDto newsDto) {
+        newsDto.setCreated(LocalDateTime.now());
         return mapper.toDto(repository.save(mapper.toEntity(newsDto)));
     }
 
@@ -39,7 +43,7 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public List<NewsDto> getAll() {
-        return mapper.toDtoList(repository.findAll());
+        return repository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
     }
 
     @Override

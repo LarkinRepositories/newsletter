@@ -18,8 +18,9 @@ public class News {
     @CreatedDate
     @Column(name = "created")
     private LocalDateTime created;
-    @Column(name = "img")
-    private String img;
+    @OneToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "image_id")
+    private Image image;
     @Column(name = "text")
     private String text;
 }

@@ -62,7 +62,7 @@
     <div class="card-columns">
         <#list news.content as element>
             <div class="card" style="witdh: 18 rem">
-                <#if element.img??><img src="/img/${element.img}" class="card-img-top"/></#if>
+                <#if element.image??><img src="/img?id=${element.getImage().getId()}" class="card-img-top"/></#if>
                 <div class="card-body">
                     <h5 class="card-title"><a href="/show?id=${element.id}">${element.title}</a></h5>
                     <time class="card-subtitle">${element.created}</time>

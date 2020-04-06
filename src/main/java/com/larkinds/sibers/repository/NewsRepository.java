@@ -1,5 +1,6 @@
 package com.larkinds.sibers.repository;
 
+import com.larkinds.sibers.model.Image;
 import com.larkinds.sibers.model.News;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,4 +31,5 @@ public interface NewsRepository extends JpaRepository<News, Long> {
      * @return exists ? true : false
      */
     boolean existsByTitle(String title);
+
 }

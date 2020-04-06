@@ -1,10 +1,10 @@
 package com.larkinds.sibers.controller;
 
+import com.larkinds.sibers.dto.ImageDto;
 import com.larkinds.sibers.dto.NewsDto;
+import com.larkinds.sibers.service.ImageService;
 import com.larkinds.sibers.service.NewsService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -18,28 +18,31 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
 
 @Controller
-@Slf4j
 public class NewsController {
-    @Autowired
+
     private NewsService newsService;
-    @Value("${upload.path}")
-    private String uploadPath;
+    private ImageService imageService;
+
+    @Autowired
+    public NewsController(NewsService newsService, ImageService imageService) {
+        this.newsService = newsService;
+        this.imageService = imageService;
+    }
+
     @GetMapping
     public String index(@RequestParam(name ="filterText", required = false, defaultValue = "") String filterText, Model model,
                         @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable) {
         Page<NewsDto> news;
         if (filterText != null && !filterText.isEmpty()) {
-            news = newsService.filter(filterText,pageable);
+            news = newsService.filter(filterText, pageable);
         } else {
             news = newsService.getPage(pageable);
         }
+
         model.addAttribute("news", news);
         model.addAttribute("url", "");
         model.addAttribute("filter", filterText);
@@ -55,14 +58,11 @@ public class NewsController {
         if (bindingResult.hasErrors()) {
             Map<String, String> errorsMap = ControllerUtils.getErrors(bindingResult);
             model.mergeAttributes(errorsMap);
-        }
-        else if (newsService.exitsByTitle(newsDto.getTitle())) {
+        } else if (newsService.exitsByTitle(newsDto.getTitle())) {
             model.addAttribute("alreadyExitsError", "Record already exists");
-
         } else if (isImage(file, model)) {
-            saveFile(newsDto, file, model);
-            log.info(newsDto.toString());
-            newsDto.setCreated(LocalDateTime.now());
+            ImageDto image = imageService.store(file);
+            newsDto.setImage(image);
             newsService.add(newsDto);
         }
 
@@ -81,27 +81,13 @@ public class NewsController {
         return "detail";
     }
 
-    private void saveFile(@Valid NewsDto newsDto, @RequestParam("file") MultipartFile file, Model model) throws IOException {
-        if (file != null && !file.getOriginalFilename().isEmpty()) {
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdir();
-            }
-            String uuid = UUID.randomUUID().toString();
-            String result = uuid.concat(".").concat(file.getOriginalFilename());
-            file.transferTo(new File(uploadPath + "/" + result));
-            newsDto.setImg(result);
-        }
-    }
-
     private boolean isImage(@RequestParam("file") MultipartFile file, Model model) {
         final String format = "image/jpg|image/png|image/gif|image/svg";
         if (file != null && !file.getOriginalFilename().isEmpty() && !file.getContentType().matches(format)) {
             String fileError = "File should be an image";
             model.addAttribute("fileError", fileError);
             return false;
-        } else {
-            return true;
         }
+            return true;
     }
 }
